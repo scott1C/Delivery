@@ -16,6 +16,8 @@ Our goal is to create an app which can which can dynamically and quickly distrib
 
 - Expand the area of delivery
 
+- To deal with the Vehicle Routing Problem (VRP)
+
 ## After clonning this repository, you will have to follow these steps in case if you want to check how it works:
 
 ### If you want to clone it, use the commad:
