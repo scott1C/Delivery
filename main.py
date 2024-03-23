@@ -69,6 +69,7 @@ route_map = folium.Map(location=[start_node['y'], start_node['x']], zoom_start=1
 start_marker = folium.Marker(location=(G.nodes[route_graph[0][0]]['y'], G.nodes[route_graph[0][0]]['x']), popup='Start', icon=folium.Icon(color='green')).add_to(route_map)
 
 # Iterate over paths and add a PolyLine for each path
+destination_number = 1
 for path in route_graph:
     # Create a list of (latitude, longitude) pairs for the path
     path_coordinates = [(G.nodes[node]['y'], G.nodes[node]['x']) for node in path]
@@ -77,7 +78,8 @@ for path in route_graph:
     folium.PolyLine(locations=path_coordinates, color='blue', weight=5, opacity=0.7).add_to(route_map)
 
     # Adding destination markers on our path
-    folium.Marker(location=(G.nodes[path[-1]]['y'], G.nodes[path[-1]]['x']), popup='End', icon=folium.Icon(color='red')).add_to(route_map)
+    folium.Marker(location=(G.nodes[path[-1]]['y'], G.nodes[path[-1]]['x']), popup=f"{destination_number}", icon=folium.Icon(color='red')).add_to(route_map)
+    destination_number += 1
 
 
 # Save and show the route
