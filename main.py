@@ -35,52 +35,63 @@ gdf_nodes, gdf_edges = ox.graph_to_gdfs(G)
 # Extract nodes from the graph
 nodes = list(G.nodes)
 
-# Randomly select four nodes
-random_nodes = random.sample(nodes, 4)
+# Randomly select nodes
+destination_random_nodes = random.sample(nodes, 10)
+start_random_nodes = random.sample(nodes, math.ceil(10 / 3))
 
-permutations = generate_permutations(random_nodes)
+# Adding the start position and initializating the folium map
+start_position = G.nodes[destination_random_nodes[0]]
+route_map = folium.Map(location=[start_position['y'], start_position['x']], zoom_start=12)
 
-shortest_path_length = math.inf
+# Adding markers of the start point in our map
+for index, start_node in enumerate(start_random_nodes):
+    folium.Marker(location=(G.nodes[start_node]['y'], G.nodes[start_node]['x']), popup=f"Courier {index + 1}", icon=folium.Icon(color='green')).add_to(route_map)
+
+ # Adding destination markers in our map
+for index, destionation_node in enumerate(destination_random_nodes):
+    folium.Marker(location=(G.nodes[destionation_node]['y'], G.nodes[destionation_node]['x']), popup=f"Destionation {index + 1}", icon=folium.Icon(color='red')).add_to(route_map)
+
 
 # A list to store the final route
-route_graph = []
-for permutation in permutations:
-    path_length = 0
-    # A list to store the intermediate route
-    list_of_routes = []
-    for i in range(len(permutation) - 1):
-        # Getting the route from node X to node Y
-        route = ox.shortest_path(G, permutation[i], permutation[i + 1], weight='length')
-        list_of_routes.append(route)
-        # Convert the route to a GeoDataFrame
-        route_gdf = ox.utils_graph.route_to_gdf(G, route, 'length')
-        # Calculate the total length of the route
-        path_length += route_gdf['length'].sum()
+for i in range(4):
+    route_graph = []
+    time = 0
+    orders = 0
+    while time < 30 and len(destination_random_nodes) and orders < 3:
+        closest_destination = ox.shortest_path(G, start_random_nodes[i], destination_random_nodes[0])
+        closest_destination_length = ox.utils_graph.route_to_gdf(G, closest_destination)['length'].sum()
+        index = 0
 
-    if path_length < shortest_path_length:
-        shortest_path_length = path_length
-        # Save the route
-        route_graph = list_of_routes.copy()
+        for j in range(1, len(destination_random_nodes)):
+            # Getting the route from node X to node Y
+            route = ox.shortest_path(G, start_random_nodes[i], destination_random_nodes[j], weight='length')
+            # Convert the route to a GeoDataFrame to get the length of the path
+            route_length = ox.utils_graph.route_to_gdf(G, route)['length'].sum()
+            if route_length < closest_destination_length:
+                closest_destination = route
+                closest_destination_length = route_length
+                index = j
 
-start_node = G.nodes[route_graph[0][0]]
-route_map = folium.Map(location=[start_node['y'], start_node['x']], zoom_start=12)
-
-# Adding marker of the start point in our path
-start_marker = folium.Marker(location=(G.nodes[route_graph[0][0]]['y'], G.nodes[route_graph[0][0]]['x']), popup='Start', icon=folium.Icon(color='green')).add_to(route_map)
-
-# Iterate over paths and add a PolyLine for each path
-destination_number = 1
-for path in route_graph:
-    # Create a list of (latitude, longitude) pairs for the path
-    path_coordinates = [(G.nodes[node]['y'], G.nodes[node]['x']) for node in path]
-
-    # Create a PolyLine for the path
-    folium.PolyLine(locations=path_coordinates, color='blue', weight=5, opacity=0.7).add_to(route_map)
-
-    # Adding destination markers on our path
-    folium.Marker(location=(G.nodes[path[-1]]['y'], G.nodes[path[-1]]['x']), popup=f"{destination_number}", icon=folium.Icon(color='red')).add_to(route_map)
-    destination_number += 1
-
+        # Getting the time needed from the current position of the current till the destination
+        time += round(closest_destination_length / 1000 / 15 * 60)
+        
+        if time < 30:
+            route_graph.append(closest_destination)
+            start_random_nodes[i] = destination_random_nodes[index]
+            destination_random_nodes.pop(index)
+            orders += 1
+    
+    print(f"Time needed for the courier {i + 1} is: {time} minutes, having {orders} orders")
+    # Iterate over paths and add a PolyLine for each path
+    colors = ['blue', 'red', 'green', 'purple']
+    for path in route_graph:
+        # Create a list of (latitude, longitude) pairs for the path
+        path_coordinates = [(G.nodes[node]['y'], G.nodes[node]['x']) for node in path]
+        # Create a PolyLine for the path
+        folium.PolyLine(locations=path_coordinates, color=colors[i], weight=5, opacity=0.7).add_to(route_map)
+    
+    if not len(destination_random_nodes):
+        break
 
 # Save and show the route
 map_file_path="route_map.html"
