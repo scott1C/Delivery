@@ -26,11 +26,6 @@ def generate_permutations(arr):
     backtrack(1)
     return result
 
-def add_element_to_index(array, index, element):
-    while len(array) <= index:
-        array.append([])
-    array[index].append(element)
-
 file_path = os.path.join(os.path.dirname(__file__), "map.osm")
 G = ox.graph_from_xml(file_path)
 
@@ -58,11 +53,11 @@ for index, destionation_node in enumerate(destination_random_nodes):
 
 
 # A list to store the final routes of the couriers
-route_graph = []
+route_graph = [[] for _ in range(len(destination_random_nodes))]
 # A list to store the time needed for each couriers
-time = []
+time = [[] for _ in range(len(destination_random_nodes))]
 # A list to store the total number of order
-orders = []
+orders = [[] for _ in range(len(destination_random_nodes))]
 for i in range(len(destination_random_nodes)):
     closest_destination = ox.shortest_path(G, destination_random_nodes[i], start_random_nodes[0])
     closest_destination_length = ox.utils_graph.route_to_gdf(G, closest_destination)['length'].sum()
@@ -80,34 +75,32 @@ for i in range(len(destination_random_nodes)):
 
     # Getting the time needed from the current position of the current till the destination
     time_till_destionation = round(closest_destination_length / 1000 / 15 * 60)
-    if len(time) > index:
+    if time[index]:
         time_till_destionation += time[index]
     
     # Adding the order to the current number of order of courier X
     index_orders = 1
-    if len(orders) > index:
+    if orders[index]:
         index_orders += orders[index]
         
     if time_till_destionation < 30 and index_orders < 4:
-        add_element_to_index(route_graph, index, closest_destination)
-        if len(orders) > index:
-            add_element_to_index(orders, index, index_orders)
-        if len(time) > index:
-            add_element_to_index(time, index, time_till_destionation)
+        route_graph[index].append(closest_destination)
+        time[index] = time_till_destionation
+        orders[index] = index_orders
         start_random_nodes[index] = destination_random_nodes[i]
     
 # Iterate over paths and add a PolyLine for each path
 colors = ['blue', 'red', 'green', 'purple']
-print(route_graph)
-for i, path in enumerate(route_graph):
-    if path:
-        print(f"Time needed for the courier {i + 1} is: {time[i]} minutes, having {orders[i]} orders")
-        # Create a list of (latitude, longitude) pairs for the path
-        path_coordinates = [(G.nodes[node]['y'], G.nodes[node]['x']) for node in path]
-        # Create a PolyLine for the path
-        folium.PolyLine(locations=path_coordinates, color=colors[i], weight=5, opacity=0.7).add_to(route_map)
-    
 
+for index, paths in enumerate(route_graph):
+    if paths:
+        print(f"Time needed for the courier {index + 1} is: {time[index]} minutes, having {orders[index]} orders")
+        # Create a list of (latitude, longitude) pairs for the path
+        for path in paths:
+            path_coordinates = [(G.nodes[node]['y'], G.nodes[node]['x']) for node in path]
+            # Create a PolyLine for the path
+            folium.PolyLine(locations=path_coordinates, color=colors[index], weight=5, opacity=0.7).add_to(route_map)
+    
 # Save and show the route
 map_file_path="route_map.html"
 route_map.save(map_file_path)
