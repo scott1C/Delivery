@@ -8,15 +8,13 @@ Our goal is to create an app which can which can dynamically and quickly distrib
 
 ## Roadmap
 
-- Add in account traffic jams
+- To add couriers dynamically
 
-- The path should be displayed as a graph
+- The path should be displayed as a graph (+)
 
-- Visualization of the data in real time
+- Visualization of the data in real time (+)
 
 - Expand the area of delivery
-
-- To deal with the Vehicle Routing Problem (VRP)
 
 ## After clonning this repository, you will have to follow these steps in case if you want to check how it works:
 
