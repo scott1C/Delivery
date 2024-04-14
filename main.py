@@ -36,8 +36,8 @@ gdf_nodes, gdf_edges = ox.graph_to_gdfs(G)
 nodes = list(G.nodes)
 
 # Randomly select nodes
-destination_random_nodes = random.sample(nodes, 10)
-start_random_nodes = random.sample(nodes, math.ceil(10 / 3))
+destination_random_nodes = random.sample(nodes, 15)
+start_random_nodes = random.sample(nodes, math.ceil(15 / 3))
 
 # Adding the start position and initializating the folium map
 start_position = G.nodes[destination_random_nodes[0]]
@@ -48,49 +48,46 @@ for index, start_node in enumerate(start_random_nodes):
     folium.Marker(location=(G.nodes[start_node]['y'], G.nodes[start_node]['x']), popup=f"Courier {index + 1}", icon=folium.Icon(color='green')).add_to(route_map)
 
  # Adding destination markers in our map
-for index, destionation_node in enumerate(destination_random_nodes):
-    folium.Marker(location=(G.nodes[destionation_node]['y'], G.nodes[destionation_node]['x']), popup=f"Destionation {index + 1}", icon=folium.Icon(color='red')).add_to(route_map)
+for index, destination_node in enumerate(destination_random_nodes):
+    folium.Marker(location=(G.nodes[destination_node]['y'], G.nodes[destination_node]['x']), popup=f"Destionation {index + 1}", icon=folium.Icon(color='red')).add_to(route_map)
 
 
 # A list to store the final routes of the couriers
-route_graph = [[] for _ in range(len(destination_random_nodes))]
-# A list to store the time needed for each couriers
-time = [[] for _ in range(len(destination_random_nodes))]
+route_graph = [[] for _ in range(len(start_random_nodes))]
+# A list to store the time needed for each courier
+time = [0 for _ in range(len(start_random_nodes))]
 # A list to store the total number of order
-orders = [[] for _ in range(len(destination_random_nodes))]
+orders = [0 for _ in range(len(start_random_nodes))]
+
 for i in range(len(destination_random_nodes)):
-    closest_destination = ox.shortest_path(G, destination_random_nodes[i], start_random_nodes[0])
-    closest_destination_length = ox.utils_graph.route_to_gdf(G, closest_destination)['length'].sum()
+    destination_point = destination_random_nodes[i]
+    # Variable where is stored the closest destination path from courier to order
+    closest_destination = []
+    # Variable where is stored the length of the path 
+    closest_destination_length = math.inf
     index = 0
 
-    for j in range(1, 4):
-        # Getting the route from node X to node Y
-        route = ox.shortest_path(G, destination_random_nodes[i], start_random_nodes[j], weight='length')
-        # Convert the route to a GeoDataFrame to get the length of the path
-        route_length = ox.utils_graph.route_to_gdf(G, route)['length'].sum()
-        if route_length < closest_destination_length:
-            closest_destination = route
-            closest_destination_length = route_length
-            index = j
+    for j, start_point in enumerate(start_random_nodes):
+        if orders[j] < 3 and time[j] < 30:
+            # Getting the route from node X to node Y
+            route = ox.shortest_path(G, destination_point, start_point)
+            # Convert the route to a GeoDataFrame to get the length of the path
+            route_length = ox.utils_graph.route_to_gdf(G, route)['length'].sum()
+            if route_length < closest_destination_length:
+                closest_destination = route
+                closest_destination_length = route_length
+                index = j
 
     # Getting the time needed from the current position of the current till the destination
-    time_till_destionation = round(closest_destination_length / 1000 / 15 * 60)
-    if time[index]:
-        time_till_destionation += time[index]
-    
-    # Adding the order to the current number of order of courier X
-    index_orders = 1
-    if orders[index]:
-        index_orders += orders[index]
+    destination_time = round(closest_destination_length / 1000 / 15 * 60)
         
-    if time_till_destionation < 30 and index_orders < 4:
-        route_graph[index].append(closest_destination)
-        time[index] = time_till_destionation
-        orders[index] = index_orders
-        start_random_nodes[index] = destination_random_nodes[i]
+    route_graph[index].append(closest_destination)
+    time[index] += destination_time
+    orders[index] += 1
+    start_random_nodes[index] = destination_random_nodes[i]
     
 # Iterate over paths and add a PolyLine for each path
-colors = ['blue', 'red', 'green', 'purple']
+colors = ['blue', 'red', 'green', 'purple', 'black']
 
 for index, paths in enumerate(route_graph):
     if paths:

@@ -1,6 +1,6 @@
 .venv
 ACO_Algorithm.py
-test.py
+test.*
 
 # Here is stored the final route
 route_map.html 
