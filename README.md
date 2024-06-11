@@ -8,13 +8,11 @@ Our goal is to create an app which can which can dynamically and quickly distrib
 
 ## Roadmap
 
-- To add couriers dynamically
+- To add couriers dynamically (+)
 
 - The path should be displayed as a graph (+)
 
 - Visualization of the data in real time (+)
-
-- Expand the area of delivery
 
 ## After clonning this repository, you will have to follow these steps in case if you want to check how it works:
 

@@ -1,6 +1,11 @@
+# virtual environment
 .venv
-ACO_Algorithm.py
+
+# Cache of the osmnx library
+cache
+
+# Test files
 test.*
 
 # Here is stored the final route
-route_map.html 
+route_map.html

@@ -36,8 +36,8 @@ gdf_nodes, gdf_edges = ox.graph_to_gdfs(G)
 nodes = list(G.nodes)
 
 # Randomly select nodes
-destination_random_nodes = random.sample(nodes, 15)
-start_random_nodes = random.sample(nodes, math.ceil(15 / 3))
+destination_random_nodes = random.sample(nodes, 10)
+start_random_nodes = random.sample(nodes, math.ceil(10 / 3))
 
 # Adding the start position and initializating the folium map
 start_position = G.nodes[destination_random_nodes[0]]
@@ -65,7 +65,7 @@ for i in range(len(destination_random_nodes)):
     closest_destination = []
     # Variable where is stored the length of the path 
     closest_destination_length = math.inf
-    index = 0
+    index = -1
 
     for j, start_point in enumerate(start_random_nodes):
         if orders[j] < 3 and time[j] < 30:
