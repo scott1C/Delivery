@@ -9,23 +9,6 @@ import webbrowser as wb
 # Start the timer
 start = t.time()
 
-def generate_permutations(arr):
-    result = []
-    n = len(arr)
-    
-    def backtrack(start):
-        if start == n:
-            result.append(arr.copy())
-            return
-        for i in range(start, n):
-            arr[start], arr[i] = arr[i], arr[start]
-            backtrack(start + 1)
-            arr[start], arr[i] = arr[i], arr[start]
-
-    # Set the backtrack to 1 so that it excludes the 1st element
-    backtrack(1)
-    return result
-
 file_path = os.path.join(os.path.dirname(__file__), "map.osm")
 G = ox.graph_from_xml(file_path)
 
